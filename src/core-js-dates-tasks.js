@@ -224,13 +224,15 @@ function getCountWeekendsInMonth(month, year) {
  * Date(2024, 1, 23) => 8
  */
 function getWeekNumberByDate(date) {
-  const januaryFirst = new Date(date.getFullYear(), 0, 1);
-  let daysOffset = januaryFirst.getDay();
-  if (daysOffset === 0) {
-    daysOffset += 7;
-  }
-  const firstMonday = new Date(date.getFullYear(), 0, 1 - daysOffset);
-  return Math.ceil((date - firstMonday) / 1000 / 60 / 60 / 24 / 7);
+  const target = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  const jan4 = new Date(Date.UTC(target.getFullYear(), 0, 4));
+  const dayOfWeek = jan4.getUTCDay() || 7;
+  const firstMonday = new Date(jan4);
+  firstMonday.setUTCDate(jan4.getUTCDate() - dayOfWeek + 1);
+  const diff = Math.floor((target - firstMonday) / (1000 * 60 * 60 * 24)) + 1;
+  return Math.ceil(diff / 7);
 }
 
 /**
@@ -247,17 +249,16 @@ function getWeekNumberByDate(date) {
 function getNextFridayThe13th(date) {
   let currentMonth = date.getMonth();
   let currentYear = date.getFullYear();
-  while (true) {
-    const nextFriday13 = new Date(currentYear, currentMonth, 13);
-    if (nextFriday13.getDay() === 5) {
-      return nextFriday13;
-    }
+  let nextFriday13 = new Date(currentYear, currentMonth, 13);
+  while (nextFriday13.getDay() !== 5) {
+    nextFriday13 = new Date(currentYear, currentMonth, 13);
     currentMonth += 1;
     if (currentMonth > 11) {
       currentMonth = 0;
       currentYear += 1;
     }
   }
+  return nextFriday13;
 }
 
 /**
